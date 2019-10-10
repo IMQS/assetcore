@@ -9,24 +9,29 @@ import (
 
 var migrationsSQL []string
 
-func openDB(log *log.Logger) (*gorm.DB, error) {
-	driver := "postgres"
-	dsn := "user=unit_test_user password=unit_test_password dbname=testgorm sslmode=disable"
+func openDB(log *log.Logger, dbConf nf.DBConfig) (*gorm.DB, error) {
 	var flags nf.DBConnectFlags
-	//flags |= nf.DBConnectFlagWipeDB
-	db, err := nf.OpenDB(log, driver, dsn, nf.MakeMigrations(log, migrationsSQL), flags)
+	flags |= nf.DBConnectFlagWipeDB
+	db, err := nf.OpenDB(log, dbConf.Driver, dbConf.DSN(), nf.MakeMigrations(log, migrationsSQL), flags)
 	if err != nil {
 		return nil, err
 	}
-	db.AutoMigrate(&Building{}, &Floor{})
+	//db.AutoMigrate(&Building{}, &Floor{})
 	return db, nil
 }
 
 func init() {
 	migrationsSQL = []string{
 		`
-		-- CREATE TABLE buildings (id BIGSERIAL PRIMARY KEY, name VARCHAR);
-		-- CREATE TABLE floors (id BIGSERIAL PRIMARY KEY, building_id BIGINT NOT NULL, floor_name VARCHAR);
+		CREATE EXTENSION IF NOT EXISTS postgis;
+
+		CREATE TABLE asset (id BIGSERIAL PRIMARY KEY, description VARCHAR, geom geometry(GeometryZ, 4326), type_id BIGINT);
+		CREATE INDEX idx_asset_geom ON asset USING GIST (geom);
+
+		CREATE TABLE type (id BIGSERIAL PRIMARY KEY, description VARCHAR);
+		
+		CREATE TABLE hierarchy1 (id BIGINT PRIMARY KEY, parent_id BIGINT);
+		CREATE INDEX idx_hierarchy1_parent ON hierarchy1(parent_id);
 		`,
 	}
 }

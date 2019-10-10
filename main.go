@@ -8,5 +8,6 @@ import (
 func main() {
 	svc := core.NewService()
 	svc.LoadConfig()
+	svc.Initialize()
 	nf.RunService(svc.ListenAndServe)
 }

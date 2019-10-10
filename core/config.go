@@ -1,12 +1,15 @@
 package core
 
-import "github.com/IMQS/serviceconfigsgo"
+import (
+	"github.com/IMQS/nf"
+	serviceconfig "github.com/IMQS/serviceconfigsgo"
+)
 
 type Config struct {
 	HttpPort int
+	DB       nf.DBConfig
 }
 
 func (c *Config) Load() error {
-	err := serviceconfigsgo.GetConfig("AssetCore", serviceName, serviceConfigVersion, serviceConfigFileName, c)
-
+	return serviceconfig.GetConfig("", "assetcore", 0, "assetcore.json", c)
 }

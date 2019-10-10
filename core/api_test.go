@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
+	"github.com/IMQS/nf"
 	"gotest.tools/assert"
 )
 
@@ -13,11 +15,10 @@ const httpPort = 2000
 func startServer() *Service {
 	s := NewService()
 	s.config.HttpPort = httpPort
-	s.config.DB.Driver = "postgres"
-	s.config.DB.Database = "unittest_assetcore"
-	s.config.DB.Username = "unittest_user"
-	s.config.DB.Password = "unittest_password"
+	s.config.DB = nf.TestDBConfig("assetcore")
+	s.Initialize()
 	go s.ListenAndServe()
+	time.Sleep(5 * time.Millisecond) // should actually try ping until it works
 	return s
 }
 
@@ -28,7 +29,13 @@ func baseURL() string {
 func TestPing(t *testing.T) {
 	startServer()
 	resp, err := http.DefaultClient.Get(baseURL() + "/ping")
-	assert.Assert(t, err == nil)
+	if err != nil {
+		t.Fatalf("Failed to ping: %v", err)
+	}
 	defer resp.Body.Close()
 	assert.Assert(t, resp.StatusCode == 200)
+}
+
+func TestAddType(t *testing.T) {
+	startServer()
 }

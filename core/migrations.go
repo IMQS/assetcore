@@ -7,6 +7,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// If you modify this schema, keep it up to date at https://dbdiagram.io/d/5d9f86ffff5115114db5209a
+
 var migrationsSQL []string
 
 func openDB(log *log.Logger, dbConf nf.DBConfig) (*gorm.DB, error) {
@@ -25,10 +27,11 @@ func init() {
 		`
 		CREATE EXTENSION IF NOT EXISTS postgis;
 
-		CREATE TABLE asset (id BIGSERIAL PRIMARY KEY, description VARCHAR, geom geometry(GeometryZ, 4326), type_id BIGINT);
+		CREATE TABLE asset (id BIGSERIAL PRIMARY KEY, description VARCHAR, geom geometry(GeometryZ, 4326), asset_type_id BIGINT);
 		CREATE INDEX idx_asset_geom ON asset USING GIST (geom);
 
-		CREATE TABLE type (id BIGSERIAL PRIMARY KEY, description VARCHAR);
+		CREATE TABLE asset_type (id BIGSERIAL PRIMARY KEY, description VARCHAR);
+		CREATE UNIQUE INDEX idx_asset_type_description ON asset_type (description);
 		
 		CREATE TABLE hierarchy1 (id BIGINT PRIMARY KEY, parent_id BIGINT);
 		CREATE INDEX idx_hierarchy1_parent ON hierarchy1(parent_id);

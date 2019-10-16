@@ -31,8 +31,8 @@ func NewService() *Service {
 func (s *Service) ListenAndServe() {
 	// Setup HTTP API
 	nf.Handle(s.router, "GET", "/ping", s.ping)
-	nf.HandleAuthenticated(s.router, "GET", "/asset/list", s.listAssets, nil)
-	nf.HandleAuthenticated(s.router, "POST", "/asset/add", s.addAssets, []int{permissions.PermBulkSms})
+	nf.HandleAuthenticated(s.router, "GET", "/asset/list", s.assetList, nil)
+	nf.HandleAuthenticated(s.router, "POST", "/asset/add", s.assetAdd, []int{permissions.PermAdmin})
 
 	s.log.Infof("Starting HTTP server on port %v", s.config.HttpPort)
 	http.ListenAndServe(fmt.Sprintf(":%v", s.config.HttpPort), s.router)

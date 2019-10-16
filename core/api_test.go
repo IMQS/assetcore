@@ -2,23 +2,26 @@ package core
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 	"time"
 
-	"github.com/IMQS/nf"
-	"gotest.tools/assert"
+	"github.com/IMQS/log"
+	"github.com/IMQS/nf/nftest"
+	"github.com/IMQS/serviceauth"
+	"github.com/IMQS/serviceauth/permissions"
 )
 
 const httpPort = 2000
 
-func startServer() *Service {
+func startServer(t *testing.T) *Service {
 	s := NewService()
 	s.config.HttpPort = httpPort
-	s.config.DB = nf.TestDBConfig("assetcore")
+	s.config.DB = nftest.MakeDBConfig("assetcore")
+	s.log = log.NewTesting(t)
+	serviceauth.ActivateMockToken(1, "user@example.com", []int{permissions.PermEnabled, permissions.PermAdmin})
 	s.Initialize()
 	go s.ListenAndServe()
-	time.Sleep(5 * time.Millisecond) // should actually try ping until it works
+	nftest.PingUntil200(t, time.Second, baseURL()+"/ping")
 	return s
 }
 
@@ -26,16 +29,6 @@ func baseURL() string {
 	return fmt.Sprintf("http://localhost:%v", httpPort)
 }
 
-func TestPing(t *testing.T) {
-	startServer()
-	resp, err := http.DefaultClient.Get(baseURL() + "/ping")
-	if err != nil {
-		t.Fatalf("Failed to ping: %v", err)
-	}
-	defer resp.Body.Close()
-	assert.Assert(t, resp.StatusCode == 200)
-}
-
-func TestAddType(t *testing.T) {
-	startServer()
+func TestAssetTypeCRUD(t *testing.T) {
+	startServer(t)
 }

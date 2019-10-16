@@ -5,7 +5,7 @@ type jsonInputAssetType struct {
 }
 
 type jsonInputAsset struct {
-	TypeID      int64
+	AssetTypeID int64
 	Description string
 	Geometry    string
 	Parent      []int64

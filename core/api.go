@@ -2,9 +2,9 @@ package core
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/IMQS/nf"
+	"github.com/IMQS/nf/nfdb"
 	"github.com/IMQS/serviceauth"
 	"github.com/julienschmidt/httprouter"
 )
@@ -13,26 +13,21 @@ func (s *Service) ping(w http.ResponseWriter, r *http.Request, p httprouter.Para
 	nf.SendPong(w)
 }
 
-func (s *Service) listAssets(w http.ResponseWriter, r *http.Request, p httprouter.Params, auth *serviceauth.Token) {
+func (s *Service) assetList(w http.ResponseWriter, r *http.Request, p httprouter.Params, auth *serviceauth.Token) {
 	query := ""
-	args := []string{}
+	args := []interface{}{}
 
 	qtype := r.FormValue("type")
 	if qtype != "" {
-		query += "AND type = ?"
-		args = append(args, qtype)
-	}
-
-	if strings.HasPrefix(query, "AND") {
-		query = query[:3]
+		query = "type IN " + nfdb.SQLCleanIDList(qtype)
 	}
 
 	assets := []asset{}
-	s.db.Where(query, args).Find(&assets)
+	s.db.Where(query, args...).Find(&assets)
 	nf.SendJSON(w, assets)
 }
 
-func (s *Service) addAssets(w http.ResponseWriter, r *http.Request, p httprouter.Params, auth *serviceauth.Token) {
+func (s *Service) assetAdd(w http.ResponseWriter, r *http.Request, p httprouter.Params, auth *serviceauth.Token) {
 	assets := []jsonInputAsset{}
 	nf.ReadJSON(r, &assets)
 }

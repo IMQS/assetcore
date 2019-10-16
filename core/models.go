@@ -1,14 +1,15 @@
 package core
 
-import "github.com/IMQS/nf"
+import "github.com/IMQS/nf/nfdb"
 
 type assetType struct {
-	nf.Model
-	Description string
+	nfdb.Model
+	Description string `gorm:"not null"`
 }
 
 type asset struct {
-	nf.Model
+	nfdb.Model
 	Description string
-	AssetType   assetType `gorm:"column:type"`
+	AssetTypeID int64 `gorm:"not null"`
+	//AssetType   assetType `gorm:"column:type"`
 }
